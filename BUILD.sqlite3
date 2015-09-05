@@ -1,0 +1,102 @@
+SRC_PREFIX = "sqlite-src-3081101"
+
+cc_binary(
+    name = "lemon",
+    srcs = ["%s/tool/lemon.c" % SRC_PREFIX],
+)
+
+COMPILER_OPTS = [
+    "-DNDEBUG=1",
+    "-DHAVE_FDATASYNC=1",
+]
+
+genrule(
+    name = "generate_parse_source",
+    tools = [":lemon"],
+    outs = ["%s/src/parse.c" % SRC_PREFIX, "%s/src/parse.h" % SRC_PREFIX],
+    srcs = [
+        "%s/src/parse.y" % SRC_PREFIX,
+        "%s/src/lempar.c" % SRC_PREFIX,
+	"%s/addopcodes.awk" % SRC_PREFIX,
+    ],
+    cmd = ("TMPDIR=$$(mktemp -d) && mkdir -p $(@D)/%s/src &&" % (SRC_PREFIX,) +
+        "cp $(location :lemon) $(location :%s/src/lempar.c) " % (SRC_PREFIX,) +
+        "$(location :%s/src/parse.y) $$TMPDIR/ &&" % (SRC_PREFIX,) +
+        "(cd $$TMPDIR && ./lemon parse.y) && " +
+        "cp $$TMPDIR/parse.c $(location :%s/src/parse.c) &&" % (SRC_PREFIX,) +
+        "awk -f $(location :%s/addopcodes.awk) $$TMPDIR/parse.h " % (SRC_PREFIX,) +
+        "> $(location :%s/src/parse.h) &&" % (SRC_PREFIX,) +
+        "rm -rf $$TMPDIR"
+    )
+)
+
+#genrule(
+#    name = "generate_sqlite3.h",
+#    srcs = [
+#        "src/sqlite.h.in",
+#	"manifest.uuid",
+#	"VERSION",
+#	"ext/rtree/sqlite3rtree.h",
+#	"tool/mksqlite3h.tcl"
+#    ],
+#    outs = ["src/sqlite3.h"],
+#    cmd = "tclsh $(location tool/mksqlite3h.tcl) . > $(GENDIR)/src/sqlite3.h",
+#)
+
+cc_binary(
+    name = "mkkeywordhash",
+    srcs = ["tool/mkkeywordhash.c"]
+)
+    
+#genrule(
+#    name = "generate_keywordhash.h",
+#    tools = [":mkkeywordhash"],
+#    outs = ["src/keywordhash.h"],
+#    cmd = "$(location :mkkeywordhash) > $(GENDIR)/src/keywordhash.h",
+#)
+
+#genrule(
+#    name = "generate_opcodes_source",
+#    outs = [
+#        "src/opcodes.c",
+#        "src/opcodes.h",
+#    ],
+#    srcs = [
+#        "src/parse.h",
+#	"src/vdbe.c",
+#	"mkopcodeh.awk",
+#	"mkopcodec.awk",
+#    ],
+#    cmd = "cat $(location src/parse.h) $(location src/vdbe.c) |" +
+#      " awk -f $(location mkopcodeh.awk) > $(location src/opcodes.h) &&" +
+#      " awk -f $(location mkopcodec.awk) $(location src/opcodes.h) >" +
+#      " $(location src/opcodes.c)",
+#)
+#
+#cc_library(
+#    name = "sqlite3",
+#    hdrs = ["src/sqlite3.h"],
+#    srcs = glob(
+#        ["**/*.c", "**/*.h"],
+#        #["src/*.h", "src/*.c, ext/**/*.c", "ext/**/*.h"],
+#        exclude = [
+#            "autoconf/**",
+#	    "ext/fts1/**",
+#	    "ext/fts2/**",
+#            "ext/misc/**",
+#            "src/lempar.c",
+#            "src/tclsqlite.c",
+#            "src/sqlite3ext.h",
+#	    "**/*test*.c",
+#            "test/**",
+#            "**/tool/**",
+#	]) + [
+#        "src/keywordhash.h",
+#        "src/sqlite3.h",
+#        "src/parse.c",
+#        "src/parse.h",
+#        "src/opcodes.c",
+#        "src/opcodes.h"],
+#    includes = ["src/"],
+#    copts = ["-DSQLITE_CORE"] + COMPILER_OPTS,
+#)
