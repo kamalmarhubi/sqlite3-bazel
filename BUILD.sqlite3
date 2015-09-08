@@ -30,30 +30,31 @@ genrule(
     )
 )
 
-#genrule(
-#    name = "generate_sqlite3.h",
-#    srcs = [
-#        "src/sqlite.h.in",
-#	"manifest.uuid",
-#	"VERSION",
-#	"ext/rtree/sqlite3rtree.h",
-#	"tool/mksqlite3h.tcl"
-#    ],
-#    outs = ["src/sqlite3.h"],
-#    cmd = "tclsh $(location tool/mksqlite3h.tcl) . > $(GENDIR)/src/sqlite3.h",
-#)
+genrule(
+    name = "generate_sqlite3.h",
+    srcs = [ "%s/%s" % (SRC_PREFIX, src) for src in [
+        "src/sqlite.h.in",
+	"manifest.uuid",
+	"VERSION",
+	"ext/rtree/sqlite3rtree.h",
+	"tool/mksqlite3h.tcl"
+    ]],
+    outs = ["%s/src/sqlite3.h" % (SRC_PREFIX,)],
+    cmd = ("tclsh $(location :%s/tool/mksqlite3h.tcl) $$(dirname $(location :%s/VERSION)) " % (SRC_PREFIX, SRC_PREFIX,) +
+        "> $(location :%s/src/sqlite3.h)" % (SRC_PREFIX,)),
+)
 
 cc_binary(
     name = "mkkeywordhash",
-    srcs = ["tool/mkkeywordhash.c"]
+    srcs = ["%s/tool/mkkeywordhash.c" % (SRC_PREFIX,)],
 )
     
-#genrule(
-#    name = "generate_keywordhash.h",
-#    tools = [":mkkeywordhash"],
-#    outs = ["src/keywordhash.h"],
-#    cmd = "$(location :mkkeywordhash) > $(GENDIR)/src/keywordhash.h",
-#)
+genrule(
+    name = "generate_keywordhash.h",
+    tools = [":mkkeywordhash"],
+    outs = ["%s/src/keywordhash.h" % (SRC_PREFIX,)],
+    cmd = "$(location :mkkeywordhash) > $(location :%s/src/keywordhash.h)" % (SRC_PREFIX,),
+)
 
 #genrule(
 #    name = "generate_opcodes_source",
