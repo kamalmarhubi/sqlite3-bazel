@@ -56,24 +56,6 @@ genrule(
     cmd = "$(location :mkkeywordhash) > $(location :%s/src/keywordhash.h)" % (SRC_PREFIX,),
 )
 
-#genrule(
-#    name = "generate_opcodes_source",
-#    outs = [
-#        "src/opcodes.c",
-#        "src/opcodes.h",
-#    ],
-#    srcs = [
-#        "src/parse.h",
-#	"src/vdbe.c",
-#	"mkopcodeh.awk",
-#	"mkopcodec.awk",
-#    ],
-#    cmd = "cat $(location src/parse.h) $(location src/vdbe.c) |" +
-#      " awk -f $(location mkopcodeh.awk) > $(location src/opcodes.h) &&" +
-#      " awk -f $(location mkopcodec.awk) $(location src/opcodes.h) >" +
-#      " $(location src/opcodes.c)",
-#)
-#
 #cc_library(
 #    name = "sqlite3",
 #    hdrs = ["src/sqlite3.h"],
@@ -101,3 +83,24 @@ genrule(
 #    includes = ["src/"],
 #    copts = ["-DSQLITE_CORE"] + COMPILER_OPTS,
 #)
+genrule(
+    name = "generate_opcodes_source",
+    outs = [
+        "%s/src/opcodes.c" % (SRC_PREFIX,),
+        "%s/src/opcodes.h" % (SRC_PREFIX,),
+    ],
+    srcs = [
+        "%s/src/parse.h" % (SRC_PREFIX,),
+	"%s/src/vdbe.c" % (SRC_PREFIX,),
+	"%s/mkopcodeh.awk" % (SRC_PREFIX,),
+	"%s/mkopcodec.awk" % (SRC_PREFIX,),
+    ],
+    cmd = "cat $(location %s/src/parse.h) " % (SRC_PREFIX,) +
+      "$(location %s/src/vdbe.c) " % (SRC_PREFIX,) +
+      "| awk -f $(location %s/mkopcodeh.awk) " % (SRC_PREFIX,) +
+      "> $(location %s/src/opcodes.h) && "  % (SRC_PREFIX,) +
+      "awk -f $(location %s/mkopcodec.awk) " % (SRC_PREFIX,) +
+      "$(location %s/src/opcodes.h) "  % (SRC_PREFIX,) +
+      "> $(location %s/src/opcodes.c)" % (SRC_PREFIX,)
+)
+
