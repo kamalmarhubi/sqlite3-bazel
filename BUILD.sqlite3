@@ -56,33 +56,6 @@ genrule(
     cmd = "$(location :mkkeywordhash) > $(location :%s/src/keywordhash.h)" % (SRC_PREFIX,),
 )
 
-#cc_library(
-#    name = "sqlite3",
-#    hdrs = ["src/sqlite3.h"],
-#    srcs = glob(
-#        ["**/*.c", "**/*.h"],
-#        #["src/*.h", "src/*.c, ext/**/*.c", "ext/**/*.h"],
-#        exclude = [
-#            "autoconf/**",
-#	    "ext/fts1/**",
-#	    "ext/fts2/**",
-#            "ext/misc/**",
-#            "src/lempar.c",
-#            "src/tclsqlite.c",
-#            "src/sqlite3ext.h",
-#	    "**/*test*.c",
-#            "test/**",
-#            "**/tool/**",
-#	]) + [
-#        "src/keywordhash.h",
-#        "src/sqlite3.h",
-#        "src/parse.c",
-#        "src/parse.h",
-#        "src/opcodes.c",
-#        "src/opcodes.h"],
-#    includes = ["src/"],
-#    copts = ["-DSQLITE_CORE"] + COMPILER_OPTS,
-#)
 genrule(
     name = "generate_opcodes_source",
     outs = [
@@ -104,3 +77,30 @@ genrule(
       "> $(location %s/src/opcodes.c)" % (SRC_PREFIX,)
 )
 
+cc_library(
+    name = "sqlite3",
+    hdrs = ["src/sqlite3.h"],
+    srcs = glob(
+        ["**/*.c", "**/*.h"],
+        #["src/*.h", "src/*.c, ext/**/*.c", "ext/**/*.h"],
+        exclude = ["%s/%s" % (SRC_PREFIX, src) for src in [
+            "autoconf/**",
+	    "ext/fts1/**",
+	    "ext/fts2/**",
+            "ext/misc/**",
+            "src/lempar.c",
+            "src/tclsqlite.c",
+            "src/sqlite3ext.h",
+	    "**/*test*.c",
+            "test/**",
+            "**/tool/**",
+	]]) + ["%s/%s" % (SRC_PREFIX, src) for src in [
+        "src/keywordhash.h",
+        ":generate_sqlite3.h",
+        #"src/parse.c",
+        #"src/parse.h",
+        "src/opcodes.c",
+        "src/opcodes.h"]],
+    includes = ["%s/src/" % (SRC_PREFIX,)],
+    copts = ["-DSQLITE_CORE"] + COMPILER_OPTS,
+)
