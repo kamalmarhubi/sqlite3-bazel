@@ -10,12 +10,14 @@ COMPILER_OPTS = [
 
 genrule(
     name = "generate_parse_source",
-    tools = [":lemon"],
+    tools = [
+        ":lemon",
+        "addopcodes.awk",
+    ],
     outs = ["parse.c", "parse.h"],
     srcs = [
         "src/parse.y",
         "src/lempar.c",
-        "addopcodes.awk",
     ],
     cmd = ("TMPDIR=$$(mktemp -d) && mkdir -p $(@D)/src &&" +
         "cp $(location :lemon) $(location :src/lempar.c) " +
@@ -30,12 +32,12 @@ genrule(
 
 genrule(
     name = "generate_sqlite3.h",
+    tools = ["tool/mksqlite3h.tcl"],
     srcs = [
         "src/sqlite.h.in",
         "manifest.uuid",
         "VERSION",
         "ext/rtree/sqlite3rtree.h",
-        "tool/mksqlite3h.tcl"
     ],
     outs = ["src/sqlite3.h"],
     cmd = ("tclsh $(location :tool/mksqlite3h.tcl) $$(dirname $(location :VERSION)) " +
@@ -56,6 +58,10 @@ genrule(
 
 genrule(
     name = "generate_opcodes_source",
+    tools = [
+        "mkopcodeh.awk",
+        "mkopcodec.awk",
+    ],
     outs = [
         "src/opcodes.c",
         "src/opcodes.h",
@@ -63,8 +69,6 @@ genrule(
     srcs = [
         "parse.h",
         "src/vdbe.c",
-        "mkopcodeh.awk",
-        "mkopcodec.awk",
     ],
     cmd = "cat $(location parse.h) " +
       "$(location src/vdbe.c) " +
