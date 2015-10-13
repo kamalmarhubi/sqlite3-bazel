@@ -15,7 +15,7 @@ genrule(
     srcs = [
         "src/parse.y",
         "src/lempar.c",
-	"addopcodes.awk",
+        "addopcodes.awk",
     ],
     cmd = ("TMPDIR=$$(mktemp -d) && mkdir -p $(@D)/src &&" +
         "cp $(location :lemon) $(location :src/lempar.c) " +
@@ -32,10 +32,10 @@ genrule(
     name = "generate_sqlite3.h",
     srcs = [
         "src/sqlite.h.in",
-	"manifest.uuid",
-	"VERSION",
-	"ext/rtree/sqlite3rtree.h",
-	"tool/mksqlite3h.tcl"
+        "manifest.uuid",
+        "VERSION",
+        "ext/rtree/sqlite3rtree.h",
+        "tool/mksqlite3h.tcl"
     ],
     outs = ["src/sqlite3.h"],
     cmd = ("tclsh $(location :tool/mksqlite3h.tcl) $$(dirname $(location :VERSION)) " +
@@ -62,9 +62,9 @@ genrule(
     ],
     srcs = [
         "parse.h",
-	"src/vdbe.c",
-	"mkopcodeh.awk",
-	"mkopcodec.awk",
+        "src/vdbe.c",
+        "mkopcodeh.awk",
+        "mkopcodec.awk",
     ],
     cmd = "cat $(location parse.h) " +
       "$(location src/vdbe.c) " +
@@ -83,19 +83,19 @@ cc_library(
         #["src/*.h", "src/*.c, ext/**/*.c", "ext/**/*.h"],
         exclude = [
             "autoconf/**",
-	    "ext/fts1/**",
-	    "ext/fts2/**",
-	    "ext/fts5/**",
-	    "ext/rbu/**",
+            "ext/fts1/**",
+            "ext/fts2/**",
+            "ext/fts5/**",
+            "ext/rbu/**",
             "ext/misc/**",
             "src/lempar.c",
             "src/tclsqlite.c",
             "src/sqlite3ext.h",
             "src/shell.*",
-	    "**/*test*.c",
+            "**/*test*.c",
             "test/**",
             "**/tool/**",
-	]) + [
+        ]) + [
         "src/keywordhash.h",
         "src/sqlite3.h",
         "parse.c",
