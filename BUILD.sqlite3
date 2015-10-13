@@ -19,15 +19,17 @@ genrule(
         "src/parse.y",
         "src/lempar.c",
     ],
-    cmd = ("TMPDIR=$$(mktemp -d) && mkdir -p $(@D)/src &&" +
-        "cp $(location :lemon) $(location :src/lempar.c) " +
-        "$(location :src/parse.y) $$TMPDIR/ &&" +
-        "(cd $$TMPDIR && ./lemon parse.y) && " +
-        "cp $$TMPDIR/parse.c $(location :parse.c) &&" +
-        "awk -f $(location :addopcodes.awk) $$TMPDIR/parse.h " +
-        "> $(location :parse.h) &&" +
-        "rm -rf $$TMPDIR"
-    )
+    cmd = """
+        TMPDIR=$$(mktemp -d) \
+        && mkdir -p $(@D)/src \
+        && cp $(location :lemon) $(location :src/lempar.c) \
+          $(location :src/parse.y) $$TMPDIR/ \
+        && (cd $$TMPDIR && ./lemon parse.y) \
+        && cp $$TMPDIR/parse.c $(location :parse.c) \
+        && awk -f $(location :addopcodes.awk) $$TMPDIR/parse.h \
+          > $(location :parse.h) \
+        && rm -rf $$TMPDIR
+    """,
 )
 
 genrule(
@@ -40,8 +42,10 @@ genrule(
         "ext/rtree/sqlite3rtree.h",
     ],
     outs = ["src/sqlite3.h"],
-    cmd = ("tclsh $(location :tool/mksqlite3h.tcl) $$(dirname $(location :VERSION)) " +
-        "> $(location :src/sqlite3.h)"),
+    cmd = """
+        tclsh $(location :tool/mksqlite3h.tcl) $$(dirname $(location :VERSION)) \
+          > $(location :src/sqlite3.h)
+    """,
 )
 
 cc_binary(
@@ -70,13 +74,12 @@ genrule(
         "parse.h",
         "src/vdbe.c",
     ],
-    cmd = "cat $(location parse.h) " +
-      "$(location src/vdbe.c) " +
-      "| awk -f $(location mkopcodeh.awk) " +
-      "> $(location src/opcodes.h) && "  +
-      "awk -f $(location mkopcodec.awk) " +
-      "$(location src/opcodes.h) "  +
-      "> $(location src/opcodes.c)"
+    cmd = """
+        cat $(location parse.h) $(location src/vdbe.c) \
+          | awk -f $(location mkopcodeh.awk) > $(location src/opcodes.h) \
+        && awk -f $(location mkopcodec.awk) $(location src/opcodes.h) \
+          > $(location src/opcodes.c)
+    """,
 )
 
 cc_library(
